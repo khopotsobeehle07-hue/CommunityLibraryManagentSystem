@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 
-export default function useLocalStorage(key, initialValue) {
+export default function useLocalStorage(key, initialValue, mergeStoredValue) {
   const [value, setValue] = useState(() => {
     try {
       const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : initialValue;
+      if (!stored) return initialValue;
+
+      const parsed = JSON.parse(stored);
+      const migrationComplete = localStorage.getItem(`${key}:migration-complete`) === "true";
+      return mergeStoredValue && !migrationComplete
+        ? mergeStoredValue(parsed, initialValue)
+        : parsed;
     } catch {
       return initialValue;
     }
@@ -12,7 +18,10 @@ export default function useLocalStorage(key, initialValue) {
 
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
+    if (mergeStoredValue) {
+      localStorage.setItem(`${key}:migration-complete`, "true");
+    }
+  }, [key, value, mergeStoredValue]);
 
   return [value, setValue];
 }
