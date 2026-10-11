@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
           <Route
             path="/users"
-            element={<ProtectedRoute roles={["admin"]}><Users /></ProtectedRoute>}
+            element={<ProtectedRoute roles={["admin", "librarian"]}><Users /></ProtectedRoute>}
           />
         </Routes>
       </main>

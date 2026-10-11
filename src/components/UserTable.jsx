@@ -1,4 +1,8 @@
-export default function UserTable({ users, currentUserId, onEdit, onDelete }) {
+export default function UserTable({ users, currentUserId, canManage, onEdit, onDelete }) {
+  if (users.length === 0) {
+    return <p>No users to show.</p>;
+  }
+
   return (
     <div className="table-wrapper">
       <table>
@@ -22,15 +26,21 @@ export default function UserTable({ users, currentUserId, onEdit, onDelete }) {
                 <span className={`badge badge-role-${user.role}`}>{user.role}</span>
               </td>
               <td className="actions">
-                <button className="btn btn-small" onClick={() => onEdit(user)}>Update</button>
-                <button
-                  className="btn btn-small btn-danger"
-                  onClick={() => onDelete(user)}
-                  disabled={user.id === currentUserId}
-                  title={user.id === currentUserId ? "You can't delete your own account" : ""}
-                >
-                  Delete
-                </button>
+                {canManage(user.role) ? (
+                  <>
+                    <button className="btn btn-small" onClick={() => onEdit(user)}>Update</button>
+                    <button
+                      className="btn btn-small btn-danger"
+                      onClick={() => onDelete(user)}
+                      disabled={user.id === currentUserId}
+                      title={user.id === currentUserId ? "You can't delete your own account" : ""}
+                    >
+                      Delete
+                    </button>
+                  </>
+                ) : (
+                  <span className="hint">View only</span>
+                )}
               </td>
             </tr>
           ))}

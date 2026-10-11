@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const EMPTY = { name: "", membershipId: "", role: "member" };
 
-export default function UserForm({ users, editingUser, lockRole, onSubmit, onCancel }) {
-  const [form, setForm] = useState(() => (editingUser ? { ...editingUser } : EMPTY));
+export default function UserForm({ users, editingUser, roles, lockRole, onSubmit, onCancel }) {
+  const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setForm(editingUser ? { ...editingUser } : { ...EMPTY, role: roles[0] ?? "member" });
+    setErrors({});
+  }, [editingUser, roles]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,9 +18,17 @@ export default function UserForm({ users, editingUser, lockRole, onSubmit, onCan
 
   const validate = () => {
     const errs = {};
-    if (!form.name.trim()) errs.name = "Name is required.";
-
+    const name = form.name.trim();
     const memberId = form.membershipId.trim();
+
+    if (!name) {
+      errs.name = "Name is required.";
+    } else if (
+      users.some((u) => u.name.toLowerCase() === name.toLowerCase() && u.id !== editingUser?.id)
+    ) {
+      errs.name = "A user with this name already exists.";
+    }
+
     if (!memberId) {
       errs.membershipId = "Membership ID is required.";
     } else if (
@@ -27,6 +40,8 @@ export default function UserForm({ users, editingUser, lockRole, onSubmit, onCan
     ) {
       errs.membershipId = "This membership ID is already in use.";
     }
+
+    if (!roles.includes(form.role)) errs.role = "Select a valid role.";
     return errs;
   };
 
@@ -42,7 +57,7 @@ export default function UserForm({ users, editingUser, lockRole, onSubmit, onCan
       membershipId: form.membershipId.trim(),
       role: form.role,
     });
-    setForm(EMPTY);
+    setForm({ ...EMPTY, role: roles[0] ?? "member" });
   };
 
   return (
@@ -66,12 +81,19 @@ export default function UserForm({ users, editingUser, lockRole, onSubmit, onCan
         </div>
         <div>
           <label htmlFor="role">Role</label>
-          <select id="role" name="role" value={form.role} onChange={handleChange} disabled={lockRole}>
-            <option value="member">Member</option>
-            <option value="librarian">Librarian</option>
-            <option value="admin">Admin</option>
+          <select
+            id="role"
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            disabled={lockRole || roles.length === 1}
+          >
+            {roles.map((r) => (
+              <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+            ))}
           </select>
           {lockRole && <p className="hint">You can't change your own role.</p>}
+          {errors.role && <p className="field-error">{errors.role}</p>}
         </div>
       </div>
       <div className="form-actions">
