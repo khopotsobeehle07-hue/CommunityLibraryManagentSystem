@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react";
 
-const EMPTY = { bookId: "", type: "add", quantity: "", member: "" };
+export default function TransactionForm({
+  books,
+  users,
+  onSubmit,
+  restricted = false,
+  memberName = "",
+}) {
+  const emptyForm = {
+    bookId: "",
+    type: restricted ? "borrow" : "add",
+    quantity: "",
+    member: restricted ? memberName : "",
+  };
 
-export default function TransactionForm({ books, users, onSubmit }) {
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
 
@@ -56,12 +67,12 @@ export default function TransactionForm({ books, users, onSubmit }) {
     }
 
     setMessage(form.type === "add" ? "Stock added successfully." : "Borrowing recorded.");
-    setForm({ ...EMPTY, type: form.type });
+    setForm({ ...emptyForm, type: form.type });
   };
 
   return (
     <form className="card" onSubmit={handleSubmit} noValidate>
-      <h3>Record Transaction</h3>
+      <h3>{restricted ? "Borrow a Book" : "Record Transaction"}</h3>
       <div className="form-grid">
         <div>
           <label htmlFor="bookId">Book</label>
@@ -75,21 +86,30 @@ export default function TransactionForm({ books, users, onSubmit }) {
           {errors.bookId && <p className="field-error">{errors.bookId}</p>}
         </div>
 
-        <div>
-          <label htmlFor="type">Type</label>
-          <select id="type" name="type" value={form.type} onChange={handleChange}>
-            <option value="add">Add stock (new arrival)</option>
-            <option value="borrow">Deduct stock (borrowed)</option>
-          </select>
-        </div>
+        {!restricted && (
+          <div>
+            <label htmlFor="type">Type</label>
+            <select id="type" name="type" value={form.type} onChange={handleChange}>
+              <option value="add">Add stock (new arrival)</option>
+              <option value="borrow">Deduct stock (borrowed)</option>
+            </select>
+          </div>
+        )}
 
         <div>
           <label htmlFor="quantity">Quantity</label>
-          <input id="quantity" name="quantity" type="number" min="1" value={form.quantity} onChange={handleChange} />
+          <input
+            id="quantity"
+            name="quantity"
+            type="number"
+            min="1"
+            value={form.quantity}
+            onChange={handleChange}
+          />
           {errors.quantity && <p className="field-error">{errors.quantity}</p>}
         </div>
 
-        {form.type === "borrow" && (
+        {!restricted && form.type === "borrow" && (
           <div>
             <label htmlFor="member">Borrowed by</label>
             <select id="member" name="member" value={form.member} onChange={handleChange}>
@@ -103,8 +123,11 @@ export default function TransactionForm({ books, users, onSubmit }) {
         )}
       </div>
 
+      {restricted && <p className="hint">Borrowing as {memberName}.</p>}
       {message && <p className="success">{message}</p>}
-      <button type="submit" className="btn">Record Transaction</button>
+      <button type="submit" className="btn">
+        {restricted ? "Borrow" : "Record Transaction"}
+      </button>
     </form>
   );
 }
