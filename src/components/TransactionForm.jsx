@@ -6,11 +6,13 @@ export default function TransactionForm({
   onSubmit,
   restricted = false,
   memberName = "",
+  borrowedBookIds = [],
+  maxBooks = 5,
 }) {
   const emptyForm = {
     bookId: "",
     type: restricted ? "borrow" : "add",
-    quantity: "",
+    quantity: restricted ? "1" : "",
     member: restricted ? memberName : "",
   };
 
@@ -24,16 +26,32 @@ export default function TransactionForm({
     return () => clearTimeout(timer);
   }, [message]);
 
+  const limitReached = restricted && borrowedBookIds.length >= maxBooks;
+
+  const availableBooks = restricted
+    ? books.filter((b) => !borrowedBookIds.includes(b.id) && b.quantity > 0)
+    : books;
+
   const selectedBook = books.find((b) => b.id === Number(form.bookId));
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+    setErrors({ ...errors, [e.target.name]: "", form: "" });
   };
 
   const validate = () => {
     const errs = {};
     if (!form.bookId) errs.bookId = "Select a book.";
+
+    if (restricted) {
+      if (borrowedBookIds.includes(Number(form.bookId))) {
+        errs.bookId = "You have already borrowed this book.";
+      }
+      if (limitReached) {
+        errs.form = `You can borrow up to ${maxBooks} different books.`;
+      }
+      return errs;
+    }
 
     const qty = Number(form.quantity);
     if (form.quantity === "") errs.quantity = "Quantity is required.";
@@ -57,12 +75,12 @@ export default function TransactionForm({
     const error = onSubmit({
       bookId: Number(form.bookId),
       type: form.type,
-      quantity: Number(form.quantity),
+      quantity: restricted ? 1 : Number(form.quantity),
       member: form.type === "borrow" ? form.member : "",
     });
 
     if (error) {
-      setErrors({ quantity: error });
+      setErrors({ form: error });
       return;
     }
 
@@ -73,13 +91,29 @@ export default function TransactionForm({
   return (
     <form className="card" onSubmit={handleSubmit} noValidate>
       <h3>{restricted ? "Borrow a Book" : "Record Transaction"}</h3>
+
+      {restricted && (
+        <p className="hint">
+          Borrowing as {memberName}. You have borrowed {borrowedBookIds.length} of {maxBooks} books.
+          You can take one copy of each book.
+        </p>
+      )}
+
       <div className="form-grid">
         <div>
           <label htmlFor="bookId">Book</label>
-          <select id="bookId" name="bookId" value={form.bookId} onChange={handleChange}>
+          <select
+            id="bookId"
+            name="bookId"
+            value={form.bookId}
+            onChange={handleChange}
+            disabled={limitReached}
+          >
             <option value="">-- Select a book --</option>
-            {books.map((b) => (
-              <option key={b.id} value={b.id}>{b.title}</option>
+            {availableBooks.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.title} ({b.genre})
+              </option>
             ))}
           </select>
           {selectedBook && <p className="hint">Current stock: {selectedBook.quantity}</p>}
@@ -96,18 +130,20 @@ export default function TransactionForm({
           </div>
         )}
 
-        <div>
-          <label htmlFor="quantity">Quantity</label>
-          <input
-            id="quantity"
-            name="quantity"
-            type="number"
-            min="1"
-            value={form.quantity}
-            onChange={handleChange}
-          />
-          {errors.quantity && <p className="field-error">{errors.quantity}</p>}
-        </div>
+        {!restricted && (
+          <div>
+            <label htmlFor="quantity">Quantity</label>
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min="1"
+              value={form.quantity}
+              onChange={handleChange}
+            />
+            {errors.quantity && <p className="field-error">{errors.quantity}</p>}
+          </div>
+        )}
 
         {!restricted && form.type === "borrow" && (
           <div>
@@ -123,9 +159,15 @@ export default function TransactionForm({
         )}
       </div>
 
-      {restricted && <p className="hint">Borrowing as {memberName}.</p>}
+      {limitReached && (
+        <p className="field-error">
+          You have reached the limit of {maxBooks} different books.
+        </p>
+      )}
+      {errors.form && <p className="field-error">{errors.form}</p>}
       {message && <p className="success">{message}</p>}
-      <button type="submit" className="btn">
+
+      <button type="submit" className="btn" disabled={limitReached}>
         {restricted ? "Borrow" : "Record Transaction"}
       </button>
     </form>
