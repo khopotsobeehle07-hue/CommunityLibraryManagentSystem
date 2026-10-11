@@ -21,7 +21,7 @@ export default function Navbar() {
           <NavLink to="/" end>Dashboard</NavLink>
           {isStaff && <NavLink to="/books">Books</NavLink>}
           <NavLink to="/transactions">{isStaff ? "Transactions" : "Borrow"}</NavLink>
-          {isStaff && <NavLink to="/users">{isAdmin ? "Users" : "Members"}</NavLink>}
+          {isStaff && <NavLink to="/users">Users</NavLink>}
           <span className="nav-user">{currentUser.name} ({currentUser.role})</span>
           <button className="btn btn-light" onClick={handleLogout}>Logout</button>
         </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { login } = useAuth();
@@ -44,7 +44,14 @@ export default function Login() {
         {error && <p className="error">{error}</p>}
         <button type="submit" className="btn">Log in</button>
       </form>
-      <p className="muted-copy demo-hint">Demo administrator: Admin / ADMIN001</p>
+      <div className="muted-copy demo-hint">
+        <p>Demo logins:</p>
+        <ul>
+          <li>Khopotso / ADMIN001</li>
+          <li>David / LIB001</li>
+          <li>Carol / MEM001</li>
+        </ul>
+      </div>
     </div>
   );
 }

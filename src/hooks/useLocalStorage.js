@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 
-export default function useLocalStorage(key, initialValue, mergeStoredValue) {
+export default function useLocalStorage(key, initialValue, mergeStoredValue, migrationVersion) {
+  const migrationKey = migrationVersion
+    ? `${key}:migration-complete:${migrationVersion}`
+    : `${key}:migration-complete`;
+
   const [value, setValue] = useState(() => {
     try {
       const stored = localStorage.getItem(key);
       if (!stored) return initialValue;
 
       const parsed = JSON.parse(stored);
-      const migrationComplete = localStorage.getItem(`${key}:migration-complete`) === "true";
+      const migrationComplete = localStorage.getItem(migrationKey) === "true";
       return mergeStoredValue && !migrationComplete
         ? mergeStoredValue(parsed, initialValue)
         : parsed;
@@ -19,9 +23,9 @@ export default function useLocalStorage(key, initialValue, mergeStoredValue) {
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value));
     if (mergeStoredValue) {
-      localStorage.setItem(`${key}:migration-complete`, "true");
+      localStorage.setItem(migrationKey, "true");
     }
-  }, [key, value, mergeStoredValue]);
+  }, [key, value, mergeStoredValue, migrationKey]);
 
   return [value, setValue];
 }

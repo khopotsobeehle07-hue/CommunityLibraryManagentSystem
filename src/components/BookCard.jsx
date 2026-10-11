@@ -1,3 +1,4 @@
+// this is a component that displays a book card with its details and availability status
 export default function BookCard({ book }) {
   const isOut = book.quantity === 0;
   const isLow = book.quantity < 2;

@@ -295,3 +295,6 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 .category-title span { font-weight: 400; color: #6b7280; font-size: 0.95rem; }
+
+.user-group table { table-layout: fixed; }
+.user-group th:last-child { width: 40%; }
