@@ -1,12 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { CATEGORIES } from "../data/categories";
 
 const EMPTY = { title: "", author: "", genre: "", isbn: "", quantity: "" };
 
 export default function BookForm({ books, editingBook, onSubmit, onCancel }) {
-  const [form, setForm] = useState(() => (
-    editingBook ? { ...editingBook, quantity: String(editingBook.quantity) } : EMPTY
-  ));
+  const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (editingBook) {
+      setForm({ ...editingBook, quantity: String(editingBook.quantity) });
+    } else {
+      setForm(EMPTY);
+    }
+    setErrors({});
+  }, [editingBook]);
+
+  const categoryOptions =
+    editingBook && !CATEGORIES.includes(editingBook.genre)
+      ? [...CATEGORIES, editingBook.genre]
+      : CATEGORIES;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,7 +30,7 @@ export default function BookForm({ books, editingBook, onSubmit, onCancel }) {
     const errs = {};
     if (!form.title.trim()) errs.title = "Title is required.";
     if (!form.author.trim()) errs.author = "Author is required.";
-    if (!form.genre.trim()) errs.genre = "Genre is required.";
+    if (!form.genre) errs.genre = "Select a category.";
 
     const cleanIsbn = form.isbn.replace(/[-\s]/g, "");
     if (!cleanIsbn) {
@@ -46,7 +59,7 @@ export default function BookForm({ books, editingBook, onSubmit, onCancel }) {
     const book = {
       title: form.title.trim(),
       author: form.author.trim(),
-      genre: form.genre.trim(),
+      genre: form.genre,
       isbn: form.isbn.replace(/[-\s]/g, ""),
     };
     if (!editingBook) book.quantity = Number(form.quantity);
@@ -69,8 +82,13 @@ export default function BookForm({ books, editingBook, onSubmit, onCancel }) {
           {errors.author && <p className="field-error">{errors.author}</p>}
         </div>
         <div>
-          <label htmlFor="genre">Genre</label>
-          <input id="genre" name="genre" value={form.genre} onChange={handleChange} />
+          <label htmlFor="genre">Genre (Category)</label>
+          <select id="genre" name="genre" value={form.genre} onChange={handleChange}>
+            <option value="">-- Select a category --</option>
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
           {errors.genre && <p className="field-error">{errors.genre}</p>}
         </div>
         <div>

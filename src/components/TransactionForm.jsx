@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { CATEGORIES } from "../data/categories";
 
 export default function TransactionForm({
   books,
@@ -31,6 +32,10 @@ export default function TransactionForm({
   const availableBooks = restricted
     ? books.filter((b) => !borrowedBookIds.includes(b.id) && b.quantity > 0)
     : books;
+
+    const bookGroups = [...new Set([...CATEGORIES, ...availableBooks.map((b) => b.genre)])]
+    .map((name) => ({ name, items: availableBooks.filter((b) => b.genre === name) }))
+    .filter((group) => group.items.length > 0);
 
   const selectedBook = books.find((b) => b.id === Number(form.bookId));
 
@@ -110,10 +115,12 @@ export default function TransactionForm({
             disabled={limitReached}
           >
             <option value="">-- Select a book --</option>
-            {availableBooks.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.title} ({b.genre})
-              </option>
+                        {bookGroups.map((group) => (
+              <optgroup key={group.name} label={group.name}>
+                {group.items.map((b) => (
+                  <option key={b.id} value={b.id}>{b.title}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
           {selectedBook && <p className="hint">Current stock: {selectedBook.quantity}</p>}

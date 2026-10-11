@@ -284,3 +284,14 @@ tbody tr:last-child td { border-bottom: none; }
   .actions { flex-direction: column; }
   .login-card { margin: 1rem auto; }
 }
+
+.category-section { margin-bottom: 2rem; }
+
+.category-title {
+  margin: 0 0 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--accent);
+  color: var(--primary);
+}
+
+.category-title span { font-weight: 400; color: #6b7280; font-size: 0.95rem; }
