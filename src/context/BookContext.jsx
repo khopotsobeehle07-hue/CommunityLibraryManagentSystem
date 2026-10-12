@@ -19,6 +19,19 @@ const SAMPLE_BOOKS = [
   { id: 13, title: "Cry, the Beloved Country", author: "Alan Paton", genre: "Fiction", isbn: "9780000000080", quantity: 58 },
 ];
 
+const SAMPLE_TRANSACTIONS = [
+  { id: 6, bookId: 1, bookTitle: "Things Fall Apart", type: "borrow", quantity: 1, member: "Carol", recordedBy: "Khopotso", date: "2026-10-12T16:46:53.000Z" },
+  { id: 5, bookId: 13, bookTitle: "Cry, the Beloved Country", type: "add", quantity: 3, member: "", recordedBy: "David", date: "2026-10-11T19:58:39.000Z" },
+  { id: 4, bookId: 9, bookTitle: "Walkabout", type: "borrow", quantity: 2, member: "Khopotso", recordedBy: "David", date: "2026-10-11T19:39:16.000Z" },
+  { id: 3, bookId: 2, bookTitle: "Clean Code", type: "add", quantity: 2, member: "", recordedBy: "Khopotso", date: "2026-10-11T19:38:06.000Z" },
+  { id: 2, bookId: 8, bookTitle: "Weep Not, Child", type: "borrow", quantity: 1, member: "Carol", recordedBy: "Khopotso", date: "2026-10-10T15:24:00.000Z" },
+  { id: 1, bookId: 3, bookTitle: "A Brief History of Time", type: "add", quantity: 4, member: "", recordedBy: "David", date: "2026-10-10T14:12:00.000Z" },
+];
+
+function replaceTransactionHistory(storedTransactions, initialTransactions) {
+  return initialTransactions;
+}
+
 function addMissingSampleBooks(storedBooks, sampleBooks) {
   if (!Array.isArray(storedBooks)) return sampleBooks;
 
@@ -42,7 +55,12 @@ function addMissingSampleBooks(storedBooks, sampleBooks) {
 
 export function BooksProvider({ children }) {
   const [books, setBooks] = useLocalStorage("books", SAMPLE_BOOKS, addMissingSampleBooks);
-  const [transactions, setTransactions] = useLocalStorage("transactions", []);
+  const [transactions, setTransactions] = useLocalStorage(
+    "transactions",
+    SAMPLE_TRANSACTIONS,
+    replaceTransactionHistory,
+    "six-record-history-v1"
+  );
 
   const addBook = (book) =>
     setBooks((prev) => [...prev, { ...book, id: Date.now() }]);
